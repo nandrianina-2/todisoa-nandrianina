@@ -18,7 +18,9 @@ export default function ProfileAdminPage() {
   const [profile, setProfile] = useState<Profile>(empty);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     fetch("/api/profile")
@@ -28,6 +30,29 @@ export default function ProfileAdminPage() {
         setLoading(false);
       });
   }, []);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setUploadError("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+
+    setUploading(false);
+
+    if (!res.ok) {
+      setUploadError(data.error ?? "Échec de l'upload.");
+      return;
+    }
+
+    setProfile((p) => ({ ...p, avatarUrl: data.url }));
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +105,44 @@ export default function ProfileAdminPage() {
           onChange={(e) => setProfile({ ...profile, tagline: e.target.value })}
           required
         />
+      </Field>
+
+      <Field label="Photo de profil">
+        <div className="flex items-start gap-4">
+          {profile.avatarUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatarUrl}
+              alt="Aperçu"
+              className="h-16 w-16 rounded-xl border border-border object-cover"
+            />
+          )}
+          <div className="flex-1 space-y-2">
+            <input
+              className="input"
+              placeholder="https://... (lien direct vers une image)"
+              value={profile.avatarUrl ?? ""}
+              onChange={(e) =>
+                setProfile({ ...profile, avatarUrl: e.target.value })
+              }
+            />
+            <div className="flex items-center gap-3">
+              <label className="cursor-pointer rounded-full border border-border px-4 py-1.5 text-xs text-muted hover:border-accent hover:text-accent">
+                {uploading ? "Envoi..." : "Uploader une image"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+              {uploadError && (
+                <span className="text-xs text-red-500">{uploadError}</span>
+              )}
+            </div>
+          </div>
+        </div>
       </Field>
 
       <Field label="Bio (paragraphes séparés par une ligne vide)">

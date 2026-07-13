@@ -7,11 +7,18 @@ Portfolio full-stack avec contenu éditable stocké dans MongoDB.
 ## Design
 
 Le fil conducteur visuel du site s'appelle **le Fil** : une ligne verticale qui traverse
-toute la page et se remplit d'un accent cuivré au fil du scroll (clin d'œil direct à
-ton projet *LeFilMobile* et à son thème cuivré). Chaque section est marquée par un
-"nœud" sur ce fil, comme un point de soudure. Les compétences sont affichées sous forme
-de barres de signal plutôt que de barres de progression classiques, et le toggle
-clair/sombre est stylisé comme un interrupteur.
+toute la page et se remplit d'un accent laiton au fil du scroll (clin d'œil à ton
+projet *LeFilMobile*, sans reprendre la teinte cuivre/terracotta trop associée à
+l'identité visuelle de Claude). Chaque section est marquée par un "nœud" sur ce fil,
+comme un point de soudure. Les compétences sont affichées sous forme de barres de
+signal plutôt que de barres de progression classiques, et le toggle clair/sombre est
+stylisé comme un interrupteur.
+
+Palette : fond graphite neutre (ni le beige crème, ni le noir pur — les deux réflexes
+les plus courants en design généré par IA), accent laiton/bronze distinctif.
+Typographie : Bricolage Grotesque (titres), Work Sans (texte), IBM Plex Mono
+(données, tags de stack) — volontairement différent de la combinaison
+Space Grotesk / Inter / JetBrains Mono devenue elle-même un réflexe reconnaissable.
 
 Deux thèmes : sombre (par défaut) et clair, mémorisés en local sur le navigateur du
 visiteur.

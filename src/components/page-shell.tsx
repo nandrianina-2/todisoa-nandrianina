@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { Trace } from "./trace";
+import { AnimatedBackground } from "./animated-background";
 import { Hero } from "./hero";
 import { About } from "./about";
 import { Projects } from "./projects";
@@ -22,26 +23,29 @@ export function PageShell({
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={containerRef} className="relative mx-auto max-w-5xl px-6">
-      <Trace containerRef={containerRef} />
+    <>
+      <AnimatedBackground />
+      <div ref={containerRef} className="relative mx-auto max-w-5xl px-6">
+        <Trace containerRef={containerRef} />
 
-      <header className="flex items-center justify-between py-8">
-        <span className="signal-tag text-sm tracking-tight text-text">
-          {profile.name.split(" ")[0]}<span className="text-accent">.</span>
-        </span>
-        <ThemeToggle />
-      </header>
+        <header className="flex items-center justify-between py-8">
+          <span className="signal-tag text-sm tracking-tight text-text">
+            {profile.name.split(" ")[0]}<span className="text-accent">.</span>
+          </span>
+          <ThemeToggle />
+        </header>
 
-      <Hero profile={profile} />
-      <About profile={profile} />
-      <Projects projects={projects} />
-      <Skills skills={skills} />
-      <Contact profile={profile} />
+        <Hero profile={profile} />
+        <About profile={profile} />
+        <Projects projects={projects} />
+        <Skills skills={skills} />
+        <Contact profile={profile} />
 
-      <footer className="border-t border-border py-8 text-xs text-muted md:pl-10">
-        © {new Date().getFullYear()} {profile.name} — construit avec Next.js
-        &amp; MongoDB.
-      </footer>
-    </div>
+        <footer className="border-t border-border py-8 text-xs text-muted md:pl-10">
+          © {new Date().getFullYear()} {profile.name} — construit avec Next.js
+          &amp; MongoDB.
+        </footer>
+      </div>
+    </>
   );
 }

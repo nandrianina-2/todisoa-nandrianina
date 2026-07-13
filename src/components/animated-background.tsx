@@ -44,7 +44,7 @@ export function AnimatedBackground() {
       const styles = getComputedStyle(document.documentElement);
       return {
         dot: styles.getPropertyValue("--border").trim() || "#333",
-        signal: styles.getPropertyValue("--accent").trim() || "#b8860b",
+        signal: styles.getPropertyValue("--accent").trim() || "#0284c7",
       };
     }
 

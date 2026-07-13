@@ -26,6 +26,23 @@ export function Hero({ profile }: { profile: Profile }) {
         className="grid gap-14 md:grid-cols-[1.3fr_0.9fr] md:items-center"
       >
         <div>
+          {profile.avatarUrl && (
+            <motion.div variants={item} className="relative mb-6 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={profile.avatarUrl}
+                alt={profile.name}
+                className="h-20 w-20 rounded-full border-2 border-accent object-cover sm:h-24 sm:w-24"
+              />
+              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-bg bg-surface">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-pulse-node rounded-full bg-live" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-live" />
+                </span>
+              </span>
+            </motion.div>
+          )}
+
           <motion.p
             variants={item}
             className="signal-tag flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted"

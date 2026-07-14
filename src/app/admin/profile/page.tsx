@@ -22,6 +22,9 @@ export default function ProfileAdminPage() {
   const [message, setMessage] = useState("");
   const [uploadError, setUploadError] = useState("");
 
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeError, setResumeError] = useState("");
+
   useEffect(() => {
     fetch("/api/profile")
       .then((res) => res.json())
@@ -31,6 +34,24 @@ export default function ProfileAdminPage() {
       });
   }, []);
 
+  async function uploadFile(
+    file: File,
+    kind: "avatar" | "resume"
+  ): Promise<string | null> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("kind", kind);
+
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error ?? "Échec de l'upload.");
+    }
+
+    return data.url as string;
+  }
+
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -38,20 +59,31 @@ export default function ProfileAdminPage() {
     setUploading(true);
     setUploadError("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-
-    setUploading(false);
-
-    if (!res.ok) {
-      setUploadError(data.error ?? "Échec de l'upload.");
-      return;
+    try {
+      const url = await uploadFile(file, "avatar");
+      setProfile((p) => ({ ...p, avatarUrl: url ?? p.avatarUrl }));
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Échec de l'upload.");
+    } finally {
+      setUploading(false);
     }
+  }
 
-    setProfile((p) => ({ ...p, avatarUrl: data.url }));
+  async function handleResumeUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingResume(true);
+    setResumeError("");
+
+    try {
+      const url = await uploadFile(file, "resume");
+      setProfile((p) => ({ ...p, resumeUrl: url ?? p.resumeUrl }));
+    } catch (err) {
+      setResumeError(err instanceof Error ? err.message : "Échec de l'upload.");
+    } finally {
+      setUploadingResume(false);
+    }
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -141,6 +173,44 @@ export default function ProfileAdminPage() {
                 <span className="text-xs text-red-500">{uploadError}</span>
               )}
             </div>
+          </div>
+        </div>
+      </Field>
+
+      <Field label="CV (PDF)">
+        <div className="space-y-2">
+          <input
+            className="input"
+            placeholder="https://... (lien direct vers un PDF)"
+            value={profile.resumeUrl ?? ""}
+            onChange={(e) =>
+              setProfile({ ...profile, resumeUrl: e.target.value })
+            }
+          />
+          <div className="flex items-center gap-3">
+            <label className="cursor-pointer rounded-full border border-border px-4 py-1.5 text-xs text-muted hover:border-accent hover:text-accent">
+              {uploadingResume ? "Envoi..." : "Uploader un PDF"}
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleResumeUpload}
+                disabled={uploadingResume}
+                className="hidden"
+              />
+            </label>
+            {profile.resumeUrl && (
+              <a
+                href={profile.resumeUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-accent hover:underline"
+              >
+                Voir le fichier actuel
+              </a>
+            )}
+            {resumeError && (
+              <span className="text-xs text-red-500">{resumeError}</span>
+            )}
           </div>
         </div>
       </Field>

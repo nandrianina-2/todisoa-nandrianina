@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowDown, Mail } from "lucide-react";
+import { ArrowDown, Mail, Download } from "lucide-react";
 import type { Profile } from "@/types";
 
 const container = {
@@ -74,6 +74,18 @@ export function Hero({ profile }: { profile: Profile }) {
               <Mail className="h-4 w-4" />
               Me contacter
             </a>
+            {profile.resumeUrl && (
+              <a
+                href={profile.resumeUrl}
+                target="_blank"
+                rel="noreferrer"
+                download
+                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent"
+              >
+                <Download className="h-4 w-4" />
+                Télécharger le CV
+              </a>
+            )}
           </motion.div>
         </div>
 

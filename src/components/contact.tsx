@@ -4,7 +4,7 @@ import type { Profile } from "@/types";
 
 export function Contact({ profile }: { profile: Profile }) {
   return (
-    <section id="contact" className="py-24 pb-32 md:pl-10">
+    <section id="contact" className="py-16 pb-20 md:pl-10">
       <SectionHeader index="N.04" label="disponibilité" title="Contact" />
 
       <div className="max-w-xl md:pl-10">

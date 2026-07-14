@@ -18,7 +18,7 @@ const item = {
 
 export function Hero({ profile }: { profile: Profile }) {
   return (
-    <section className="relative flex min-h-[92vh] flex-col justify-center py-24 md:pl-10">
+    <section className="relative flex min-h-[80vh] flex-col justify-center py-16 md:pl-10">
       <motion.div
         variants={container}
         initial="hidden"
@@ -172,7 +172,7 @@ export function Hero({ profile }: { profile: Profile }) {
         variants={item}
         initial="hidden"
         animate="show"
-        className="mt-24 flex items-center gap-2 text-xs text-muted transition-colors hover:text-accent md:mt-32"
+        className="mt-12 flex items-center gap-2 text-xs text-muted transition-colors hover:text-accent md:mt-16"
       >
         <ArrowDown className="h-3.5 w-3.5" />
         défiler

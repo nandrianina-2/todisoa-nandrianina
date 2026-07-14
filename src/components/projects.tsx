@@ -13,7 +13,7 @@ const statusMeta: Record<Project["status"], { label: string; color: string }> = 
 
 export function Projects({ projects }: { projects: Project[] }) {
   return (
-    <section id="projets" className="py-24 md:pl-10">
+    <section id="projets" className="py-16 md:pl-10">
       <SectionHeader
         index="N.02"
         label={`${projects.length} projets`}

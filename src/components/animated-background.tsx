@@ -39,6 +39,11 @@ export function AnimatedBackground() {
 
     const MAX_LINK_DIST = 170;
     const MAX_PULSES = 5;
+    const HOVER_RADIUS = 150;
+    const REPEL_RADIUS = 110;
+    const REPEL_DISTANCE = 16; // décalage max en px, purement visuel
+
+    const mouse = { x: -9999, y: -9999, active: false };
 
     function getColors() {
       const styles = getComputedStyle(document.documentElement);
@@ -91,25 +96,43 @@ export function AnimatedBackground() {
       }
     }
 
+    // Position affichée d'un nœud : sa position ambiante + un léger décalage
+    // s'il est proche du curseur. Purement visuel, ne modifie jamais vx/vy,
+    // donc la dérive de fond n'est jamais perturbée par le survol.
+    function displayPos(n: Node): { x: number; y: number } {
+      if (!mouse.active) return { x: n.x, y: n.y };
+
+      const dx = n.x - mouse.x;
+      const dy = n.y - mouse.y;
+      const d = Math.hypot(dx, dy);
+      if (d >= REPEL_RADIUS || d < 0.001) return { x: n.x, y: n.y };
+
+      const push = ((REPEL_RADIUS - d) / REPEL_RADIUS) * REPEL_DISTANCE;
+      return { x: n.x + (dx / d) * push, y: n.y + (dy / d) * push };
+    }
+
     function draw() {
       if (!ctx) return;
       const { dot, signal } = getColors();
       ctx.clearRect(0, 0, width, height);
 
-      // Nœuds : points discrets, quasi immobiles
+      // Nœuds : points discrets, quasi immobiles (+ léger écart si proches du curseur)
       ctx.fillStyle = dot;
       ctx.globalAlpha = 0.55;
       for (const n of nodes) {
+        const { x, y } = displayPos(n);
         ctx.beginPath();
-        ctx.arc(n.x, n.y, 1.1, 0, Math.PI * 2);
+        ctx.arc(x, y, 1.1, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
 
       // Impulsions : segment qui s'illumine en voyageant d'un nœud à l'autre
       for (const p of pulses) {
-        const x = p.from.x + (p.to.x - p.from.x) * p.progress;
-        const y = p.from.y + (p.to.y - p.from.y) * p.progress;
+        const from = displayPos(p.from);
+        const to = displayPos(p.to);
+        const x = from.x + (to.x - from.x) * p.progress;
+        const y = from.y + (to.y - from.y) * p.progress;
 
         const fade = Math.sin(Math.PI * p.progress); // monte puis redescend
 
@@ -117,8 +140,8 @@ export function AnimatedBackground() {
         ctx.globalAlpha = fade * 0.35;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(p.from.x, p.from.y);
-        ctx.lineTo(p.to.x, p.to.y);
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
         ctx.stroke();
 
         ctx.globalAlpha = fade * 0.9;
@@ -131,6 +154,49 @@ export function AnimatedBackground() {
         ctx.shadowBlur = 0;
       }
       ctx.globalAlpha = 1;
+
+      // Réaction au curseur : lueur douce + lignes de proximité vers les nœuds proches
+      if (mouse.active) {
+        for (const n of nodes) {
+          const { x, y } = displayPos(n);
+          const d = Math.hypot(x - mouse.x, y - mouse.y);
+          if (d > HOVER_RADIUS) continue;
+
+          const proximity = 1 - d / HOVER_RADIUS;
+
+          ctx.strokeStyle = signal;
+          ctx.globalAlpha = proximity * 0.3;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.stroke();
+
+          ctx.fillStyle = signal;
+          ctx.globalAlpha = 0.4 + proximity * 0.6;
+          ctx.beginPath();
+          ctx.arc(x, y, 1.1 + proximity * 1.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const glow = ctx.createRadialGradient(
+          mouse.x,
+          mouse.y,
+          0,
+          mouse.x,
+          mouse.y,
+          HOVER_RADIUS
+        );
+        glow.addColorStop(0, signal);
+        glow.addColorStop(1, "transparent");
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(mouse.x, mouse.y, HOVER_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 1;
+      }
     }
 
     function step() {
@@ -161,6 +227,18 @@ export function AnimatedBackground() {
       }
     }
 
+    function handlePointerMove(e: PointerEvent) {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.active = true;
+      if (reduceMotion) draw(); // redessine ponctuellement, sans boucle continue
+    }
+
+    function handlePointerLeave() {
+      mouse.active = false;
+      if (reduceMotion) draw();
+    }
+
     resize();
     draw();
     if (!reduceMotion) {
@@ -169,11 +247,17 @@ export function AnimatedBackground() {
 
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    document.addEventListener("pointerleave", handlePointerLeave);
+    window.addEventListener("blur", handlePointerLeave);
 
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("blur", handlePointerLeave);
     };
   }, []);
 

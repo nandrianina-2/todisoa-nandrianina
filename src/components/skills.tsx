@@ -33,7 +33,7 @@ export function Skills({ skills }: { skills: Skill[] }) {
   }, {});
 
   return (
-    <section id="competences" className="py-24 md:pl-10">
+    <section id="competences" className="py-16 md:pl-10">
       <SectionHeader index="N.03" label="stack" title="Compétences" />
 
       <div className="grid gap-10 md:pl-10 lg:grid-cols-2">

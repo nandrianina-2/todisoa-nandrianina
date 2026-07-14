@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { GripVertical } from "lucide-react";
 import type { Skill, SkillCategory } from "@/types";
 
 const emptySkill: Skill = {
@@ -70,6 +71,57 @@ export default function SkillsAdminPage() {
     if (!confirm("Supprimer cette compétence ?")) return;
     await fetch(`/api/skills/${id}`, { method: "DELETE" });
     load();
+  }
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [reorderError, setReorderError] = useState("");
+
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    // On ne réordonne qu'à l'intérieur d'une même catégorie (les compétences
+    // sont groupées par catégorie sur le site public).
+    if (skills[dragIndex].category !== skills[index].category) return;
+
+    setSkills((current) => {
+      const next = [...current];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(index, 0, moved);
+      return next;
+    });
+    setDragIndex(index);
+  }
+
+  async function handleDragEnd() {
+    setDragIndex(null);
+    setReorderError("");
+
+    const items: { id: string; order: number }[] = [];
+    let counter = 0;
+    let lastCategory: string | null = null;
+
+    for (const s of skills) {
+      if (s.category !== lastCategory) {
+        counter = 0;
+        lastCategory = s.category;
+      }
+      if (s._id) items.push({ id: s._id, order: counter });
+      counter++;
+    }
+
+    const res = await fetch("/api/skills/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!res.ok) {
+      setReorderError("Impossible d'enregistrer le nouvel ordre.");
+    }
   }
 
   return (
@@ -163,16 +215,32 @@ export default function SkillsAdminPage() {
 
       <div className="mt-10 space-y-3">
         {loading && <p className="text-sm text-muted">Chargement...</p>}
-        {skills.map((skill) => (
+        {!loading && skills.length > 1 && (
+          <p className="text-xs text-muted">
+            Glisse-dépose les compétences pour changer leur ordre (à
+            l&apos;intérieur d&apos;une même catégorie).
+          </p>
+        )}
+        {reorderError && <p className="text-xs text-red-500">{reorderError}</p>}
+        {skills.map((skill, index) => (
           <div
             key={skill._id}
-            className="flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-3"
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className={`flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-3 transition-opacity ${
+              dragIndex === index ? "opacity-50" : ""
+            }`}
           >
-            <div>
-              <p className="text-sm font-medium text-text">{skill.name}</p>
-              <p className="text-xs text-muted">
-                {skill.category} — niveau {skill.strength}/5
-              </p>
+            <div className="flex items-center gap-3">
+              <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted active:cursor-grabbing" />
+              <div>
+                <p className="text-sm font-medium text-text">{skill.name}</p>
+                <p className="text-xs text-muted">
+                  {skill.category} — niveau {skill.strength}/5
+                </p>
+              </div>
             </div>
             <div className="flex gap-3 text-xs">
               <button

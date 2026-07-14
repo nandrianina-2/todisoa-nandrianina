@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { GripVertical } from "lucide-react";
 import type { Project } from "@/types";
 
 const emptyProject: Project = {
@@ -75,6 +76,49 @@ export default function ProjectsAdminPage() {
     if (!confirm("Supprimer ce projet ?")) return;
     await fetch(`/api/projects/${id}`, { method: "DELETE" });
     load();
+  }
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [reorderError, setReorderError] = useState("");
+
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+
+    setProjects((current) => {
+      const next = [...current];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(index, 0, moved);
+      return next;
+    });
+    setDragIndex(index);
+  }
+
+  async function handleDragEnd() {
+    setDragIndex(null);
+    setReorderError("");
+
+    const items = projects
+      .filter((p): p is Project & { _id: string } => Boolean(p._id))
+      .map((p, index) => ({ id: p._id, order: index }));
+
+    const res = await fetch("/api/projects/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!res.ok) {
+      setReorderError("Impossible d'enregistrer le nouvel ordre.");
+      return;
+    }
+
+    // On aligne les valeurs `order` locales pour rester cohérent visuellement
+    setProjects((current) => current.map((p, index) => ({ ...p, order: index })));
   }
 
   return (
@@ -242,14 +286,29 @@ export default function ProjectsAdminPage() {
 
       <div className="mt-10 space-y-3">
         {loading && <p className="text-sm text-muted">Chargement...</p>}
-        {projects.map((project) => (
+        {!loading && projects.length > 1 && (
+          <p className="text-xs text-muted">
+            Glisse-dépose les projets pour changer leur ordre d&apos;affichage.
+          </p>
+        )}
+        {reorderError && <p className="text-xs text-red-500">{reorderError}</p>}
+        {projects.map((project, index) => (
           <div
             key={project._id}
-            className="flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-3"
+            draggable
+            onDragStart={() => handleDragStart(index)}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragEnd={handleDragEnd}
+            className={`flex items-center justify-between rounded-xl border border-border bg-surface px-5 py-3 transition-opacity ${
+              dragIndex === index ? "opacity-50" : ""
+            }`}
           >
-            <div>
-              <p className="text-sm font-medium text-text">{project.title}</p>
-              <p className="text-xs text-muted">{project.pitch}</p>
+            <div className="flex items-center gap-3">
+              <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-muted active:cursor-grabbing" />
+              <div>
+                <p className="text-sm font-medium text-text">{project.title}</p>
+                <p className="text-xs text-muted">{project.pitch}</p>
+              </div>
             </div>
             <div className="flex gap-3 text-xs">
               <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import type { Profile } from "@/types";
 
 const empty: Profile = {
@@ -98,7 +99,14 @@ export default function ProfileAdminPage() {
     });
 
     setSaving(false);
-    setMessage(res.ok ? "Profil enregistré." : "Erreur lors de l'enregistrement.");
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setMessage(data.error ?? "Erreur lors de l'enregistrement.");
+      return;
+    }
+
+    setMessage("Profil enregistré.");
   }
 
   if (loading) return <p className="text-sm text-muted">Chargement...</p>;
@@ -142,12 +150,15 @@ export default function ProfileAdminPage() {
       <Field label="Photo de profil">
         <div className="flex items-start gap-4">
           {profile.avatarUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatarUrl}
-              alt="Aperçu"
-              className="h-16 w-16 rounded-xl border border-border object-cover"
-            />
+            <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border">
+              <Image
+                src={profile.avatarUrl}
+                alt="Aperçu"
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
           )}
           <div className="flex-1 space-y-2">
             <input

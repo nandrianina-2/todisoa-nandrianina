@@ -96,3 +96,11 @@ Tout le contenu affiché (profil, projets, compétences) est modifiable depuis `
 sans toucher au code : ajoute, modifie ou supprime des projets et compétences, ou
 change ta bio et ta disponibilité. Les changements apparaissent sur le site public
 au rechargement (revalidation automatique toutes les 60 secondes).
+
+## Sécurité de la connexion admin
+
+Après 5 tentatives de connexion échouées en moins de 15 minutes, `/admin/login`
+bloque les tentatives suivantes pendant 15 minutes (stocké dans MongoDB, donc ça
+persiste même si ton app redémarre). Si tu te retrouves bloqué toi-même après
+plusieurs essais de mot de passe, attends 15 minutes ou supprime le document
+correspondant dans la collection `loginattempts` de ta base.

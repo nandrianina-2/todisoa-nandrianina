@@ -1,5 +1,12 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
+import { authConfig } from "@/lib/auth.config";
+
+// Instance NextAuth dédiée à l'Edge : construite uniquement à partir de la
+// config légère (sans Mongoose), pour rester compatible avec le runtime du
+// middleware. Ne vérifie que la validité de la session (JWT), jamais les
+// identifiants eux-mêmes.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;

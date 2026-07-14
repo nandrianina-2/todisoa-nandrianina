@@ -21,6 +21,8 @@ export default function ProjectsAdminPage() {
   const [form, setForm] = useState<Project>(emptyProject);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   async function load() {
     const res = await fetch("/api/projects");
@@ -34,20 +36,28 @@ export default function ProjectsAdminPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSaving(true);
+    setError("");
     const payload = { ...form };
 
-    if (editingId) {
-      await fetch(`/api/projects/${editingId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    const res = editingId
+      ? await fetch(`/api/projects/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+      : await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+    setSaving(false);
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Une erreur est survenue.");
+      return;
     }
 
     setForm(emptyProject);
@@ -207,9 +217,10 @@ export default function ProjectsAdminPage() {
         <div className="flex gap-3">
           <button
             type="submit"
-            className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accentStrong"
+            disabled={saving}
+            className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accentStrong disabled:opacity-60"
           >
-            {editingId ? "Enregistrer" : "Ajouter"}
+            {saving ? "Enregistrement..." : editingId ? "Enregistrer" : "Ajouter"}
           </button>
           {editingId && (
             <button
@@ -217,6 +228,7 @@ export default function ProjectsAdminPage() {
               onClick={() => {
                 setForm(emptyProject);
                 setEditingId(null);
+                setError("");
               }}
               className="rounded-full border border-border px-6 py-2.5 text-sm text-muted hover:text-text"
             >
@@ -224,6 +236,8 @@ export default function ProjectsAdminPage() {
             </button>
           )}
         </div>
+
+        {error && <p className="text-sm text-red-500">{error}</p>}
       </form>
 
       <div className="mt-10 space-y-3">

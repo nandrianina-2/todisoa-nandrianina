@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { ArrowDown, Mail, Download } from "lucide-react";
 import type { Profile } from "@/types";
 
@@ -92,12 +93,14 @@ export function Hero({ profile }: { profile: Profile }) {
         {/* Photo, si disponible, avec le panneau "signal" en médaillon flottant */}
         {profile.avatarUrl ? (
           <motion.div variants={item} className="relative mx-auto mb-10 w-full max-w-sm sm:mb-12">
-            <div className="relative overflow-hidden rounded-3xl border-2 border-accent shadow-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border-2 border-accent shadow-lg">
+              <Image
                 src={profile.avatarUrl}
                 alt={profile.name}
-                className="aspect-[4/5] w-full object-cover"
+                fill
+                sizes="(min-width: 768px) 384px, 90vw"
+                className="object-cover"
+                priority
               />
             </div>
 

@@ -19,7 +19,7 @@ const item = {
 
 export function Hero({ profile }: { profile: Profile }) {
   return (
-    <section className="relative flex min-h-[80vh] flex-col justify-center py-16 md:pl-10">
+    <section className="relative flex flex-col justify-center py-14 md:pl-10">
       <motion.div
         variants={container}
         initial="hidden"
@@ -42,7 +42,8 @@ export function Hero({ profile }: { profile: Profile }) {
 
           <motion.h1
             variants={item}
-            className="mt-6 font-display text-5xl font-medium leading-[1.05] tracking-tight text-text sm:text-6xl lg:text-7xl"
+            className="mt-6 break-words font-display font-medium leading-[1.05] tracking-tight text-text"
+            style={{ fontSize: "clamp(2.25rem, 3.2vw + 1.5rem, 4.5rem)" }}
           >
             {profile.name}
           </motion.h1>
@@ -92,7 +93,7 @@ export function Hero({ profile }: { profile: Profile }) {
 
         {/* Photo, si disponible, avec le panneau "signal" en médaillon flottant */}
         {profile.avatarUrl ? (
-          <motion.div variants={item} className="relative mx-auto mb-10 w-full max-w-sm sm:mb-12">
+          <motion.div variants={item} className="relative mx-auto mb-6 w-full max-w-sm sm:mb-8">
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-3xl border-2 border-accent shadow-lg">
               <Image
                 src={profile.avatarUrl}
@@ -112,7 +113,7 @@ export function Hero({ profile }: { profile: Profile }) {
             </span>
 
             {/* Panneau "signal" — écho visuel du produit phare (pont téléphone / dashboard) */}
-            <div className="absolute -bottom-8 -left-6 w-[calc(100%-1rem)] rounded-2xl border border-border bg-surface p-5 font-mono text-xs shadow-xl sm:text-sm">
+            <div className="absolute -bottom-5 -left-6 w-[calc(100%-1rem)] rounded-2xl border border-border bg-surface p-5 font-mono text-xs shadow-xl sm:text-sm">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <span className="signal-tag text-[10px] uppercase tracking-[0.2em] text-muted sm:text-xs">
                   connexion
@@ -187,9 +188,15 @@ export function Hero({ profile }: { profile: Profile }) {
         variants={item}
         initial="hidden"
         animate="show"
-        className="mt-12 flex items-center gap-2 text-xs text-muted transition-colors hover:text-accent md:mt-16"
+        className="mt-6 flex items-center gap-2 text-xs text-muted transition-colors hover:text-accent md:mt-8"
       >
-        <ArrowDown className="h-3.5 w-3.5" />
+        <motion.span
+          animate={{ y: [0, 4, 0] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          className="flex"
+        >
+          <ArrowDown className="h-3.5 w-3.5" />
+        </motion.span>
         défiler
       </motion.a>
     </section>

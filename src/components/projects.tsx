@@ -30,7 +30,8 @@ export function Projects({ projects }: { projects: Project[] }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: (i % 2) * 0.08 }}
-              className="group relative flex flex-col rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-accent"
+              whileHover={{ y: -4 }}
+              className="group relative flex flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm transition-colors hover:border-accent hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-4">
                 <h3 className="font-display text-xl font-medium text-text">
